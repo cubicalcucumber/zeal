@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdbool.h>
 
 #include "lexer.h"
 

@@ -1,7 +1,7 @@
 #ifndef zeal_lexer_h
 #define zeal_lexer_h
 
-#include <stdint.h>
+#include <stddef.h>
 
 /* The lexer works on a string somewhere else in memory. It views one character
  * at a time and remembers the beginning of the lexeme currently being read. */
