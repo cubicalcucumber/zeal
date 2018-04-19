@@ -1,24 +1,29 @@
-CC := C:\Coding\MinGW\bin\gcc
+CC := gcc
 CFLAGS := -Wall -Wpedantic -pedantic -std=c99
 
-all: repl.o utils.o lexer.o parser.o compiler.o value.o vm.o main.o
+all: repl.o utils.o \
+		 compiler/lexer.o compiler/parser.o compiler/compiler.o vm/value.o vm/vm.o main.o
 	$(CC) $(CFLAGS) -o main \
-		repl.o utils.o lexer.o parser.o compiler.o value.o vm.o main.o
+		repl.o utils.o compiler/lexer.o compiler/parser.o compiler/compiler.o \
+		vm/value.o vm/vm.o main.o
 
-main.o: compiler.h repl.h vm.h main.c
+main.o: compiler/compiler.h repl.h vm/fragment.h vm/vm.h main.c
 utils.o: utils.h utils.c
 repl.o: utils.h repl.h
-lexer.o: lexer.h lexer.c
-parser.o: lexer.h parser.h token.h parser.c
-value.o: utils.h value.h value.c
-compiler.o: compiler.h fragment.h parser.h utils.h value.h compiler.c
-vm.o: fragment.h utils.h value.h vm.h vm.c
+compiler/lexer.o: compiler/lexer.h compiler/lexer.c
+compiler/parser.o: \
+	compiler/lexer.h compiler/parser.h compiler/token.h compiler/parser.c
+compiler/compiler.o: \
+	compiler/compiler.h compiler/compiler.c compiler/parser.h utils.h \
+	vm/fragment.h vm/value.h
+vm/value.o: utils.h vm/value.h vm/value.c
+vm/vm.o: utils.h vm/fragment.h vm/value.h vm/vm.h vm/vm.c
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm *.o
+	@rm compiler/*.o vm/*.o *.o
 
 .PHONY: clean
 .NOTPARALLEL: clean

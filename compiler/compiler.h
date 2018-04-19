@@ -1,7 +1,7 @@
 #ifndef zeal_compiler_h
 #define zeal_compiler_h
 
-#include "fragment.h"
+#include "../vm/fragment.h"
 #include "parser.h"
 
 typedef struct

@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "compiler/compiler.h"
 #include "repl.h"
-#include "compiler.h"
-#include "vm.h"
+#include "vm/fragment.h"
+#include "vm/vm.h"
 
 /* Parse, compile and run the given input string. */
 static void evaluate(Compiler* compiler, VirtualMachine* vm, Fragment* fragment,

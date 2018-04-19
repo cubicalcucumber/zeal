@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 #include "compiler.h"
-#include "utils.h"
-#include "value.h"
+#include "../utils.h"
+#include "../vm/value.h"
 
 /* Convert the current token to a number value. */
 static Value value_from_integer_token(Parser* parser)
