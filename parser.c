@@ -39,11 +39,15 @@ static bool lex_next_token(Parser* parser)
   return false;
 }
 
-/* Expect the next token to be of a given type. If the types mismatch return
- * the given error message. */
-static bool expect(Parser* parser, TokenType type, const char* error)
+bool expect(Parser* parser, TokenType type, const char* error)
 {
-  lex_next_token(parser);
+  /* If a lexer error has been encountered, the expected token could not be
+   * lexed. Hence, the report the parse error as well. */
+  if (!lex_next_token(parser))
+  {
+    printf("Parse error: %s.\n", error);
+    return false;
+  }
 
   if (parser->current_token.type == type)
     return true;
@@ -52,14 +56,9 @@ static bool expect(Parser* parser, TokenType type, const char* error)
   return false;
 }
 
-void parse(Parser* parser, const char* input)
+void parser_set_input(Parser* parser, const char* input)
 {
-  /* Setup the pointer into the input string. */
   parser->input = input;
   parser->lexer.current_char = input;
   parser->lexer.lexeme_beginning = input;
-
-  if (!expect(parser, ZEAL_INTEGER_TOKEN, "expected integer"))
-    return;
-  expect(parser, ZEAL_EOF_TOKEN, "expected eof after integer");
 }
