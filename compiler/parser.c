@@ -15,8 +15,8 @@ static void set_current_token(Parser* parser, TokenType type)
   parser->lexer.lexeme_beginning = parser->lexer.current_char;
 }
 
-/* Lex the next token. Currently only integer tokens are supported. */
-static bool lex_next_token(Parser* parser)
+/* Lex a token. Currently only integer tokens are supported. */
+static void lex_token(Parser* parser)
 {
   /* First, eat away the leading whitespace. Then, use the current character to
    * decide which type of token we have to lex. */
@@ -27,37 +27,35 @@ static bool lex_next_token(Parser* parser)
   {
     read_digits(&parser->lexer);
     set_current_token(parser, ZEAL_INTEGER_TOKEN);
-    return true;
+    return;
   }
   else if (current == '\0')
   {
     set_current_token(parser, ZEAL_EOF_TOKEN);
-    return true;
+    return;
   }
 
   printf("Lexer error: unexpected character '%c'.\n", current);
-  return false;
+  parser->error = true;
+  set_current_token(parser, ZEAL_ERROR_TOKEN);
 }
 
-bool expect(Parser* parser, TokenType type, const char* error)
+void expect(Parser* parser, TokenType type, const char* error)
 {
-  /* If a lexer error has been encountered, the expected token could not be
-   * lexed. Hence, the report the parse error as well. */
-  if (!lex_next_token(parser))
-  {
-    printf("Parse error: %s.\n", error);
-    return false;
-  }
+  lex_token(parser);
 
+  /* If a lexer error has been encountered, the current token is the error
+   * token. Thus, the parser error is reported as well. */
   if (parser->current_token.type == type)
-    return true;
+    return;
 
   printf("Parse error: %s.\n", error);
-  return false;
+  parser->error = true;
 }
 
 void parser_set_input(Parser* parser, const char* input)
 {
+  parser->error = false;
   parser->input = input;
   parser->lexer.current_char = input;
   parser->lexer.lexeme_beginning = input;

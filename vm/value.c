@@ -3,7 +3,7 @@
 #include "../utils.h"
 #include "value.h"
 
-Value value_integer(int64_t integer)
+Value value_from_integer(int64_t integer)
 {
   Value value;
   value.type = ZEAL_VALUE_INTEGER;

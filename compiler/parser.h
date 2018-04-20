@@ -9,6 +9,7 @@
 typedef struct
 {
   const char* input;
+  bool error;
   Lexer lexer;
   Token current_token;
 } Parser;
@@ -18,6 +19,6 @@ void parser_set_input(Parser* parser, const char* input);
 
 /* Expect the next token to be of a given type. If the types mismatch return
  * the given error message. */
-bool expect(Parser* parser, TokenType type, const char* error);
+void expect(Parser* parser, TokenType type, const char* error);
 
 #endif

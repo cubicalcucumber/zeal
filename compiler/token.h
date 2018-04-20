@@ -6,8 +6,9 @@
 /* Possible token types used by the lexer. */
 typedef enum
 {
+  ZEAL_ERROR_TOKEN,
   ZEAL_INTEGER_TOKEN,
-  ZEAL_EOF_TOKEN,
+  ZEAL_EOF_TOKEN
 } TokenType;
 
 /* Each token consists of a type and a reference to the lexeme which lies

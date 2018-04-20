@@ -18,7 +18,7 @@ typedef struct
 } Value;
 
 /* Create a value from the given 64-bit int. */
-Value value_integer(int64_t integer);
+Value value_from_integer(int64_t integer);
 
 /* Print the given value. */
 void value_print(Value value);

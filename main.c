@@ -9,12 +9,17 @@
 #include "vm/vm.h"
 
 /* Parse, compile and run the given input string. */
-static void evaluate(Compiler* compiler, VirtualMachine* vm, Fragment* fragment,
-                     const char* input)
+static void evaluate(Compiler* compiler, VirtualMachine* vm, const char* input)
 {
-  CompileResult result = compile_number(compiler, input, fragment);
-  if (result == ZEAL_COMPILE_OK)
-    run(vm, fragment);
+  Fragment fragment;
+
+  compiler_reset(compiler);
+  compile_expression(compiler, input, &fragment);
+
+  if (compiler->error)
+    printf("Errors occurred while compiling.\n");
+  else
+    run(vm, &fragment);
 }
 
 int32_t main()
@@ -24,7 +29,6 @@ int32_t main()
 
   Compiler compiler;
   VirtualMachine vm;
-  Fragment fragment;
 
   /* The REPL loop. */
   do
@@ -35,7 +39,7 @@ int32_t main()
     if (strcmp(line, ":q") == 0)
       is_running = false;
     else
-      evaluate(&compiler, &vm, &fragment, line);
+      evaluate(&compiler, &vm, line);
 
     free(line);
   } while (is_running);
