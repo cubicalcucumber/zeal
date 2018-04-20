@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "compiler.h"
+#include "token.h"
 #include "../utils.h"
 #include "../vm/value.h"
 
@@ -14,11 +15,26 @@ static bool int64_from_token(Token token, int64_t* result)
   return errno != ERANGE;
 }
 
-/* Convert the current token to a number value. */
+/* Reset the compilers error state and parser. */
+static void compiler_reset(Compiler* compiler, const char* input)
+{
+  compiler->error = false;
+  parser_reset(compiler->parser, input);
+}
+
+static void generate_expression(Compiler* compiler, Fragment* fragment)
+{
+  parse_expression(compiler->parser, fragment);
+  /* Print the value in register 0 and halt the execution. */
+  fragment->code.instructions[1] = 1;
+  fragment->code.instructions[2] = 2;
+}
+
+/* Convert the current token to an integer value. */
 static Value create_integer(Compiler* compiler)
 {
   int64_t as_int;
-  if (!int64_from_token(compiler->parser.current_token, &as_int))
+  if (!int64_from_token(compiler->parser->current_token, &as_int))
   {
     printf("Compiler error: Integer out of range.\n");
     compiler->error = true;
@@ -26,43 +42,22 @@ static Value create_integer(Compiler* compiler)
   return value_from_integer(as_int);
 }
 
-/* Generate code and data for a given integer value. */
-static void generate_integer(Compiler* compiler, Value integer,
-                             Fragment* fragment)
+void compiler_init(Compiler* compiler, Parser* parser)
+{
+  compiler->parser = parser;
+  compiler->parser->compiler = compiler;
+}
+
+void generate(Compiler* compiler, const char* input, Fragment* fragment)
+{
+  compiler_reset(compiler, input);
+  generate_expression(compiler, fragment);
+}
+
+void generate_integer(Compiler* compiler, Fragment* fragment)
 {
   /* For now, put the number value into slot 0 of the constant pool and emit
    * code to load the constant into register 0. */
-  fragment->data.values[0] = integer;
+  fragment->data.values[0] = create_integer(compiler);
   fragment->code.instructions[0] = 0;
-}
-
-void compiler_reset(Compiler* compiler) { compiler->error = false; }
-
-void compile_expression(Compiler* compiler, const char* input,
-                        Fragment* fragment)
-{
-  parser_set_input(&compiler->parser, input);
-
-  expect(&compiler->parser, ZEAL_INTEGER_TOKEN, "expected integer");
-  if (compiler->parser.error)
-  {
-    compiler->error = true;
-    return;
-  }
-
-  Value integer = create_integer(compiler);
-  generate_integer(compiler, integer, fragment);
-
-  expect(&compiler->parser, ZEAL_EOF_TOKEN, "expected eof after integer");
-  if (compiler->parser.error)
-  {
-    compiler->error = true;
-    return;
-  }
-
-  /* Print the value in register 0 and halt the execution. */
-  fragment->code.instructions[1] = 1;
-  fragment->code.instructions[2] = 2;
-
-  return;
 }

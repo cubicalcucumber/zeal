@@ -9,12 +9,11 @@
 #include "vm/vm.h"
 
 /* Parse, compile and run the given input string. */
-static void evaluate(Compiler* compiler, VirtualMachine* vm, const char* input)
+static void evaluate(Parser* parser, Compiler* compiler, VirtualMachine* vm,
+                     const char* input)
 {
   Fragment fragment;
-
-  compiler_reset(compiler);
-  compile_expression(compiler, input, &fragment);
+  generate(compiler, input, &fragment);
 
   if (compiler->error)
     printf("Errors occurred while compiling.\n");
@@ -27,8 +26,11 @@ int32_t main()
   char* line = NULL;
   bool is_running = true;
 
+  Parser parser;
   Compiler compiler;
   VirtualMachine vm;
+
+  compiler_init(&compiler, &parser);
 
   /* The REPL loop. */
   do
@@ -39,7 +41,7 @@ int32_t main()
     if (strcmp(line, ":q") == 0)
       is_running = false;
     else
-      evaluate(&compiler, &vm, line);
+      evaluate(&parser, &compiler, &vm, line);
 
     free(line);
   } while (is_running);

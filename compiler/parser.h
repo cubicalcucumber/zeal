@@ -5,20 +5,26 @@
 
 #include "lexer.h"
 #include "token.h"
+#include "../vm/fragment.h"
 
 typedef struct
 {
-  const char* input;
-  bool error;
+  /* The compiler which is called by the parser for code generation. */
+  struct Compiler* compiler;
   Lexer lexer;
+  /* The token encountered last. */
   Token current_token;
+  /* The input string being parsed. */
+  const char* input;
+  /* Set to true when lexer or parser errors are encountered. */
+  bool error;
 } Parser;
 
-/* Setup the pointers into the input string. */
-void parser_set_input(Parser* parser, const char* input);
+/* Reset the given parser instance, i.e. reset the error state and input
+ * string. */
+void parser_reset(Parser* parser, const char* input);
 
-/* Expect the next token to be of a given type. If the types mismatch return
- * the given error message. */
-void expect(Parser* parser, TokenType type, const char* error);
+/* Parse an expression and invoke code generation into the given fragment. */
+void parse_expression(Parser* parser, Fragment* fragment);
 
 #endif

@@ -3,21 +3,23 @@
 
 #include <stdbool.h>
 
-#include "../vm/fragment.h"
 #include "parser.h"
+#include "../vm/fragment.h"
 
-typedef struct
+typedef struct Compiler
 {
-  Parser parser;
+  Parser* parser;
   bool error;
 } Compiler;
 
-/* Reset the given compiler instance. */
-void compiler_reset(Compiler* compiler);
+/* Initialize the given compiler instance. */
+void compiler_init(Compiler* compiler, Parser* parser);
 
-/* Parse the given input string. For now, there exist only a single parse rule:
- * read a number and nothing more.*/
-void compile_expression(Compiler* compiler, const char* input,
-                        Fragment* fragment);
+/* Generate code and data for the given input string. For now, there exist only
+ * a single parse rule: read a number and nothing more.*/
+void generate(Compiler* compiler, const char* input, Fragment* fragment);
+
+/* Generate code and data for an integer object represented by the current token. */
+void generate_integer(Compiler* compiler, Fragment* fragment);
 
 #endif

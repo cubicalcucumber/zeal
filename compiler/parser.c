@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "compiler.h"
 #include "parser.h"
 
 /* Set the current token of the parser. */
@@ -15,7 +16,8 @@ static void set_current_token(Parser* parser, TokenType type)
   parser->lexer.lexeme_beginning = parser->lexer.current_char;
 }
 
-/* Lex a token. Currently only integer tokens are supported. */
+/* Lex a token. Currently only integer and eof tokens are supported. Report an
+ * error whenever unexpected characters are encountered. */
 static void lex_token(Parser* parser)
 {
   /* First, eat away the leading whitespace. Then, use the current character to
@@ -40,7 +42,9 @@ static void lex_token(Parser* parser)
   set_current_token(parser, ZEAL_ERROR_TOKEN);
 }
 
-void expect(Parser* parser, TokenType type, const char* error)
+/* Expect the next token to be of a given type. If the types mismatch return
+ * the given error message. */
+static void expect(Parser* parser, TokenType type, const char* error)
 {
   lex_token(parser);
 
@@ -53,10 +57,29 @@ void expect(Parser* parser, TokenType type, const char* error)
   parser->error = true;
 }
 
-void parser_set_input(Parser* parser, const char* input)
+void parser_reset(Parser* parser, const char* input)
 {
   parser->error = false;
   parser->input = input;
   parser->lexer.current_char = input;
   parser->lexer.lexeme_beginning = input;
+}
+
+void parse_expression(Parser* parser, Fragment* fragment)
+{
+  expect(parser, ZEAL_INTEGER_TOKEN, "expected integer");
+  if (parser->error)
+  {
+    parser->compiler->error = true;
+    return;
+  }
+
+  generate_integer(parser->compiler, fragment);
+
+  expect(parser, ZEAL_EOF_TOKEN, "expected eof after integer");
+  if (parser->error)
+  {
+    parser->compiler->error = true;
+    return;
+  }
 }
