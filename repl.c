@@ -6,6 +6,8 @@
 #include "repl.h"
 #include "utils.h"
 
+static void display_prompt() { printf(">> "); }
+
 /* Trim \n, \r, or \r\n from the end of the given string. Return true if the
  * given string could be trimmed. */
 static bool trim_trailing_newline(char* str)
@@ -30,13 +32,15 @@ static bool trim_trailing_newline(char* str)
   return false;
 }
 
-char* read_line(FILE* file)
+/* Read a line from the given file pointer. Note that reading a line stops if
+ * the \0 character is encountered. The caller is responsible for freeing the
+ * returned string. */
+static char* read_line(FILE* file)
 {
   assert(file);
 
   const size_t init_size = 64;
   size_t current_size = init_size;
-
   char* line = ZEAL_ALLOC(current_size);
 
   while (fgets(line + current_size - init_size, init_size, file))
@@ -62,4 +66,33 @@ char* read_line(FILE* file)
   return line;
 }
 
-void display_prompt() { printf(">> "); }
+static bool is_empty_line(Repl* repl) { return repl->line[0] == '\0'; }
+
+static void catch_exit_command(Repl* repl)
+{
+  if (strcmp(repl->line, ":q") == 0)
+    repl->keep_running = false;
+}
+
+static void read_eval_print(Repl* repl)
+{
+  display_prompt();
+  repl->line = read_line(stdin);
+  catch_exit_command(repl);
+  if (!is_empty_line(repl) && repl->keep_running)
+    evaluate(&repl->interpreter, repl->line);
+  free(repl->line);
+}
+
+void repl_init(Repl* repl)
+{
+  interpreter_init(&repl->interpreter);
+  repl->keep_running = true;
+  repl->line = NULL;
+}
+
+void repl_run(Repl* repl)
+{
+  while (repl->keep_running)
+    read_eval_print(repl);
+}

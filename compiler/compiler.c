@@ -42,13 +42,14 @@ static Value create_integer(Compiler* compiler)
   return value_from_integer(as_int);
 }
 
-void compiler_init(Compiler* compiler, Parser* parser)
+void connect_compiler_and_parser(Compiler* compiler, Parser* parser)
 {
   compiler->parser = parser;
   compiler->parser->compiler = compiler;
 }
 
-void generate(Compiler* compiler, const char* input, Fragment* fragment)
+void parse_and_compile(Compiler* compiler, const char* input,
+                       Fragment* fragment)
 {
   compiler_reset(compiler, input);
   generate_expression(compiler, fragment);

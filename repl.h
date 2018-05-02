@@ -3,12 +3,17 @@
 
 #include <stdio.h>
 
-/* Read a line from the given file pointer. Note that reading a line stops if
- * the \0 character is encountered. The caller is responsible for freeing the
- * returned string. */
-char* read_line(FILE* file);
+#include "zeal.h"
 
-/* Display the prompt string. */
-void display_prompt();
+typedef struct
+{
+  Interpreter interpreter;
+  bool keep_running;
+  char* line;
+} Repl;
+
+void repl_init(Repl* repl);
+
+void repl_run(Repl* repl);
 
 #endif

@@ -2,12 +2,12 @@ CC := gcc
 CFLAGS := -Wall -Wpedantic -pedantic -std=c99
 
 all: repl.o utils.o \
-		 compiler/lexer.o compiler/parser.o compiler/compiler.o vm/value.o vm/vm.o main.o
-	$(CC) $(CFLAGS) -o main \
+		 compiler/lexer.o compiler/parser.o compiler/compiler.o vm/value.o vm/vm.o zeal.o
+	$(CC) $(CFLAGS) -o zeal \
 		repl.o utils.o compiler/lexer.o compiler/parser.o compiler/compiler.o \
-		vm/value.o vm/vm.o main.o
+		vm/value.o vm/vm.o zeal.o
 
-main.o: compiler/compiler.h repl.h vm/fragment.h vm/vm.h main.c
+zeal.o: compiler/compiler.h repl.h vm/fragment.h vm/vm.h zeal.h zeal.c
 utils.o: utils.h utils.c
 repl.o: utils.h repl.h
 compiler/lexer.o: compiler/lexer.h compiler/lexer.c
@@ -24,6 +24,8 @@ vm/vm.o: utils.h vm/fragment.h vm/value.h vm/vm.h vm/vm.c
 
 clean:
 	@rm compiler/*.o vm/*.o *.o
+
+rebuild: clean all
 
 .PHONY: clean
 .NOTPARALLEL: clean
