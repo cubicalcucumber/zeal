@@ -66,7 +66,12 @@ static char* read_line(FILE* file)
   return line;
 }
 
-static bool is_empty_line(Repl* repl) { return repl->line[0] == '\0'; }
+static bool is_empty_line(Repl* repl) {
+  for (size_t i = 0; i < strlen(repl->line); ++i)
+    if (!is_whitespace(repl->line[i]))
+      return false;
+  return true;
+}
 
 static void catch_exit_command(Repl* repl)
 {

@@ -3,9 +3,7 @@
 #include <stdbool.h>
 
 #include "lexer.h"
-
-/* Return true if the given character is a whitespace character. */
-static bool is_whitespace(char c) { return c == ' ' || c == '\t'; }
+#include "../utils.h"
 
 /* Read the current character as part of the current lexeme. */
 static void read_char(Lexer* lexer) { lexer->current_char++; }

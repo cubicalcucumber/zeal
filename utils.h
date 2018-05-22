@@ -1,6 +1,7 @@
 #ifndef zeal_utils_h
 #define zeal_utils_h
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,5 +28,8 @@ void* zeal_alloc(const size_t size, const char* file, const uint32_t line);
 /* Wrapper around realloc(). Panic if the allocation fails. */
 void* zeal_realloc(void* ptr, const size_t size, const char* file,
                    const uint32_t line);
+
+/* Return true if the given character is a whitespace character. */
+bool is_whitespace(char c);
 
 #endif

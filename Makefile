@@ -10,7 +10,7 @@ all: repl.o utils.o \
 zeal.o: compiler/compiler.h repl.h vm/fragment.h vm/vm.h zeal.h zeal.c
 utils.o: utils.h utils.c
 repl.o: utils.h repl.h
-compiler/lexer.o: compiler/lexer.h compiler/lexer.c
+compiler/lexer.o: compiler/lexer.h compiler/lexer.c utils.h
 compiler/parser.o: \
 	compiler/lexer.h compiler/parser.h compiler/token.h compiler/parser.c
 compiler/compiler.o: \

@@ -22,3 +22,5 @@ void* zeal_realloc(void* ptr, const size_t size, const char* file,
     ZEAL_PANIC("(Re-)Allocation failed in %s (line %d).\n", file, line);
   return new_ptr;
 }
+
+bool is_whitespace(char c) { return c == ' ' || c == '\t'; }
