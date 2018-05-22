@@ -2,10 +2,11 @@ CC := gcc
 CFLAGS := -Wall -Wpedantic -pedantic -std=c99
 
 all: repl.o utils.o \
-		 compiler/lexer.o compiler/parser.o compiler/compiler.o vm/value.o vm/vm.o zeal.o
+		 compiler/lexer.o compiler/parser.o compiler/compiler.o \
+		 vm/fragment.o vm/value.o vm/vm.o zeal.o
 	$(CC) $(CFLAGS) -o zeal \
 		repl.o utils.o compiler/lexer.o compiler/parser.o compiler/compiler.o \
-		vm/value.o vm/vm.o zeal.o
+		vm/fragment.o vm/value.o vm/vm.o zeal.o
 
 zeal.o: compiler/compiler.h repl.h vm/fragment.h vm/vm.h zeal.h zeal.c
 utils.o: utils.h utils.c
@@ -16,6 +17,7 @@ compiler/parser.o: \
 compiler/compiler.o: \
 	compiler/compiler.h compiler/compiler.c compiler/parser.h utils.h \
 	vm/fragment.h vm/value.h
+vm/fragment.o: utils.h vm/fragment.h vm/value.h vm/fragment.c
 vm/value.o: utils.h vm/value.h vm/value.c
 vm/vm.o: utils.h vm/fragment.h vm/value.h vm/vm.h vm/vm.c
 

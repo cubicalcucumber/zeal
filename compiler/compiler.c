@@ -26,9 +26,12 @@ static void generate_expression(Compiler* compiler, Fragment* fragment)
 {
   parse_expression(compiler->parser, fragment);
 
-  /* Print the value in register 0 and halt the execution. */
-  fragment->code.instructions[1] = 1;
-  fragment->code.instructions[2] = 2;
+  /* Emit code:
+   * PRINT 0
+   * HALT
+   */
+  fragment_add_code(fragment, ZEAL_OP_PRINT);
+  fragment_add_code(fragment, ZEAL_OP_HALT);
 }
 
 /* Convert the current token to an integer value. */
@@ -55,8 +58,10 @@ void parse_and_compile(Compiler* compiler, const char* input,
 
 void generate_integer(Compiler* compiler, Fragment* fragment)
 {
-  /* For now, put the number value into slot 0 of the constant pool and emit
-   * code to load the constant into register 0. */
-  fragment->data.values[0] = create_integer(compiler);
-  fragment->code.instructions[0] = 0;
+  /* Put the integer into the constant pool. */
+  fragment_add_data(fragment, create_integer(compiler));
+
+  /* Emit code which loads the integer at its index into stack slot 0. */
+  Instruction load = (((uint32_t) slot_index) << 16) | ZEAL_OP_LOAD;
+  fragment_add_code(fragment, load);
 }

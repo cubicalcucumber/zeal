@@ -27,16 +27,18 @@ typedef enum
 } OpCode;
 
 /* TODO: Remove limitation of fixed sizes for the code and data buffers. */
-#define ZEAL_CODE_BUFFER_SIZE 5
-#define ZEAL_DATA_BUFFER_SIZE 1
+#define ZEAL_CODE_BUFFER_SIZE 16
+#define ZEAL_DATA_BUFFER_SIZE 16
 
 typedef struct
 {
+  size_t size;
   Instruction instructions[ZEAL_CODE_BUFFER_SIZE];
 } CodeBuffer;
 
 typedef struct
 {
+  size_t size;
   Value values[ZEAL_DATA_BUFFER_SIZE];
 } DataBuffer;
 
@@ -47,5 +49,11 @@ typedef struct
   DataBuffer data;
   CodeBuffer code;
 } Fragment;
+
+void fragment_init(Fragment* fragment);
+
+size_t fragment_add_code(Fragment* fragment, Instruction instruction);
+
+size_t fragment_add_data(Fragment* fragment, Value value);
 
 #endif
