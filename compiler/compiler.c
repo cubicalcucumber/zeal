@@ -62,6 +62,6 @@ void generate_integer(Compiler* compiler, Fragment* fragment)
   size_t slot_index = fragment_add_data(fragment, create_integer(compiler));
 
   /* Emit code which loads the integer at its index into stack slot 0. */
-  Instruction load = (((uint32_t) slot_index) << 16) | ZEAL_OP_LOAD;
+  Instruction load = (((uint32_t) slot_index) << 24) | ZEAL_OP_LOAD;
   fragment_add_code(fragment, load);
 }

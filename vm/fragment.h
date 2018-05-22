@@ -8,7 +8,7 @@
 /* The instruction layout is not yet fully developed. For now we will use the
  * following layout:
  *  ___________________________________
- * |        |  SRC   |  DST   |   OP   |
+ * |   A    |   B    |  DST   |   OP   |
  *  -----------------------------------
  *  ^        ^        ^        ^      ^
  *  0        8        16       24     31
@@ -18,9 +18,9 @@ typedef uint32_t Instruction;
 /* The opcodes currently supported by the virtual machine. */
 typedef enum
 {
-  /* Load a value from the constant pool at index |src| into stack slot |dst|. */
+  /* Load a value from the constant pool at index A into stack slot DST. */
   ZEAL_OP_LOAD,
-  /* Print the stack value in slot |src|. */
+  /* Print the stack value in slot A. */
   ZEAL_OP_PRINT,
   /* Halt the execution. */
   ZEAL_OP_HALT
@@ -55,5 +55,7 @@ void fragment_init(Fragment* fragment);
 size_t fragment_add_code(Fragment* fragment, Instruction instruction);
 
 size_t fragment_add_data(Fragment* fragment, Value value);
+
+void debug(Fragment* fragment);
 
 #endif

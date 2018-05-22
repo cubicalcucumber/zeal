@@ -32,13 +32,13 @@ void run(VirtualMachine* vm, Fragment* fragment)
       case ZEAL_OP_LOAD:
       {
         uint8_t dst = (instruction & 0xff00) >> 8;
-        uint8_t src = (instruction & 0xff0000) >> 16;
+        uint8_t src = (instruction & 0xff0000) >> 24;
         *(sp - dst) = fragment->data.values[src];
         break;
       }
       case ZEAL_OP_PRINT:
       {
-        uint8_t src = (instruction & 0xff0000) >> 16;
+        uint8_t src = (instruction & 0xff0000) >> 24;
         value_println(*(sp - src));
         break;
       }
