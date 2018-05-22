@@ -59,7 +59,7 @@ void parse_and_compile(Compiler* compiler, const char* input,
 void generate_integer(Compiler* compiler, Fragment* fragment)
 {
   /* Put the integer into the constant pool. */
-  fragment_add_data(fragment, create_integer(compiler));
+  size_t slot_index = fragment_add_data(fragment, create_integer(compiler));
 
   /* Emit code which loads the integer at its index into stack slot 0. */
   Instruction load = (((uint32_t) slot_index) << 16) | ZEAL_OP_LOAD;
