@@ -19,12 +19,13 @@ static bool int64_from_token(Token token, int64_t* result)
 static void compiler_reset(Compiler* compiler, const char* input)
 {
   compiler->error = false;
-  parser_reset(compiler->parser, input);
+  parser_reset_input(compiler->parser, input);
 }
 
 static void generate_expression(Compiler* compiler, Fragment* fragment)
 {
   parse_expression(compiler->parser, fragment);
+
   /* Print the value in register 0 and halt the execution. */
   fragment->code.instructions[1] = 1;
   fragment->code.instructions[2] = 2;
@@ -35,10 +36,7 @@ static Value create_integer(Compiler* compiler)
 {
   int64_t as_int;
   if (!int64_from_token(compiler->parser->current_token, &as_int))
-  {
-    printf("Compiler error: Integer out of range.\n");
-    compiler->error = true;
-  }
+    error(compiler->parser, "Compiler error: Integer out of range.\n");
   return value_from_integer(as_int);
 }
 
