@@ -11,6 +11,9 @@ typedef struct
   const char* lexeme_beginning;
 } Lexer;
 
+/* Read the current character as part of the current lexeme. */
+void read_char(Lexer* lexer);
+
 /* Peek the character currently being viewed. */
 char peek_char(Lexer* lexer);
 

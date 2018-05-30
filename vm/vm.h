@@ -4,7 +4,7 @@
 #include "fragment.h"
 
 /* TODO: Remove limitation of fixed size. */
-#define ZEAL_STACK_SIZE 3
+#define ZEAL_STACK_SIZE 16
 
 typedef struct
 {

@@ -10,9 +10,10 @@ typedef struct Compiler
 {
   Parser* parser;
   bool error;
+  size_t current_register;
 } Compiler;
 
-void connect_compiler_and_parser(Compiler* compiler, Parser* parser);
+void compiler_init(Compiler* compiler, Parser* parser);
 
 /* Generate code and data for the given input string. For now, there exist only
  * a single parse rule: read a number and nothing more.*/
@@ -22,5 +23,7 @@ void parse_and_compile(Compiler* compiler, const char* input,
 /* Generate code and data for an integer object represented by the current
  * token. */
 void generate_integer(Compiler* compiler, Fragment* fragment);
+
+void generate_binary_op(Compiler* compiler, Token op_token, Fragment* fragment);
 
 #endif

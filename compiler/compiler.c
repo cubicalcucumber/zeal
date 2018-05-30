@@ -18,6 +18,7 @@ static bool int64_from_token(Token token, int64_t* result)
 /* Reset the compilers error state and parser. */
 static void compiler_reset(Compiler* compiler, const char* input)
 {
+  compiler->current_register = 0;
   compiler->error = false;
   parser_reset_input(compiler->parser, input);
 }
@@ -25,26 +26,23 @@ static void compiler_reset(Compiler* compiler, const char* input)
 static void generate_expression(Compiler* compiler, Fragment* fragment)
 {
   parse_expression(compiler->parser, fragment);
-
-  /* Emit code:
-   * PRINT 0
-   * HALT
-   */
   fragment_add_code(fragment, ZEAL_OP_PRINT);
   fragment_add_code(fragment, ZEAL_OP_HALT);
 }
 
-/* Convert the current token to an integer value. */
+/* Convert the previous token to an integer value. */
 static Value create_integer(Compiler* compiler)
 {
   int64_t as_int;
-  if (!int64_from_token(compiler->parser->current_token, &as_int))
-    error(compiler->parser, "Compiler error: Integer out of range.\n");
+  if (!int64_from_token(compiler->parser->previous_token, &as_int))
+    error_from_previous_token(compiler->parser,
+                              "Compiler error: Integer out of range.\n");
   return value_from_integer(as_int);
 }
 
-void connect_compiler_and_parser(Compiler* compiler, Parser* parser)
+void compiler_init(Compiler* compiler, Parser* parser)
 {
+  compiler->current_register = 0;
   compiler->parser = parser;
   compiler->parser->compiler = compiler;
 }
@@ -56,12 +54,31 @@ void parse_and_compile(Compiler* compiler, const char* input,
   generate_expression(compiler, fragment);
 }
 
+static Instruction binary_op_instruction(Compiler* compiler)
+{
+  return (compiler->current_register << 24) |
+         ((compiler->current_register + 1) << 16) |
+         (compiler->current_register << 8);
+}
+
+void generate_binary_op(Compiler* compiler, Token op_token, Fragment* fragment)
+{
+  compiler->current_register -= 2;
+  if (op_token.type == ZEAL_PLUS_TOKEN)
+    fragment_add_code(fragment, binary_op_instruction(compiler) | ZEAL_OP_ADD);
+  else if (op_token.type == ZEAL_STAR_TOKEN)
+    fragment_add_code(fragment, binary_op_instruction(compiler) | ZEAL_OP_MUL);
+  compiler->current_register += 1;
+}
+
 void generate_integer(Compiler* compiler, Fragment* fragment)
 {
   /* Put the integer into the constant pool. */
   size_t slot_index = fragment_add_data(fragment, create_integer(compiler));
 
   /* Emit code which loads the integer at its index into stack slot 0. */
-  Instruction load = (((uint32_t) slot_index) << 24) | ZEAL_OP_LOAD;
+  Instruction load = (((uint32_t)slot_index) << 24) |
+                     (compiler->current_register << 8) | ZEAL_OP_LOAD;
+  compiler->current_register += 1;
   fragment_add_code(fragment, load);
 }

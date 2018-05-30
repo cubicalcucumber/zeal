@@ -5,8 +5,7 @@
 #include "lexer.h"
 #include "../utils.h"
 
-/* Read the current character as part of the current lexeme. */
-static void read_char(Lexer* lexer) { lexer->current_char++; }
+void read_char(Lexer* lexer) { lexer->current_char++; }
 
 /* Jump over the current character. */
 static void eat_char(Lexer* lexer)

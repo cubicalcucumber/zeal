@@ -27,25 +27,43 @@ void run(VirtualMachine* vm, Fragment* fragment)
     instruction = *ip++;
     op = instruction & 0xff;
 
-    switch(op)
+    switch (op)
     {
-      case ZEAL_OP_LOAD:
-      {
-        uint8_t dst = (instruction & 0xff00) >> 8;
-        uint8_t src = (instruction & 0xff0000) >> 24;
-        *(sp - dst) = fragment->data.values[src];
-        break;
-      }
-      case ZEAL_OP_PRINT:
-      {
-        uint8_t src = (instruction & 0xff0000) >> 24;
-        value_println(*(sp - src));
-        break;
-      }
-      case ZEAL_OP_HALT:
-      {
-        return;
-      }
+    case ZEAL_OP_LOAD:
+    {
+      uint8_t dst = (instruction & 0xff00) >> 8;
+      uint8_t src = (instruction & 0xff000000) >> 24;
+      *(sp - dst) = fragment->data.values[src];
+      break;
+    }
+    case ZEAL_OP_PRINT:
+    {
+      uint8_t src = (instruction & 0xff000000) >> 24;
+      value_println(*(sp - src));
+      break;
+    }
+    case ZEAL_OP_ADD:
+    {
+      uint8_t dst = (instruction & 0xff00) >> 8;
+      uint8_t b = (instruction & 0xff0000) >> 16;
+      uint8_t a = (instruction & 0xff000000) >> 24;
+      *(sp - dst) =
+          value_from_integer((*(sp - a)).integer + (*(sp - b)).integer);
+      break;
+    }
+    case ZEAL_OP_MUL:
+    {
+      uint8_t dst = (instruction & 0xff00) >> 8;
+      uint8_t b = (instruction & 0xff0000) >> 16;
+      uint8_t a = (instruction & 0xff000000) >> 24;
+      *(sp - dst) =
+          value_from_integer((*(sp - a)).integer * (*(sp - b)).integer);
+      break;
+    }
+    case ZEAL_OP_HALT:
+    {
+      return;
+    }
     }
   }
 }

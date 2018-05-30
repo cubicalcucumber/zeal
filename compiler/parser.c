@@ -12,6 +12,8 @@ static const char* token_type_to_string(TokenType type)
     return "lexer error";
   else if (type == ZEAL_INTEGER_TOKEN)
     return "integer";
+  else if (type == ZEAL_PLUS_TOKEN || type == ZEAL_STAR_TOKEN)
+    return "binary arithmetic operator";
   else
     return "end of input";
 }
@@ -42,7 +44,6 @@ static void mark_lexeme_beginning(Parser* parser)
   parser->lexer.lexeme_beginning = parser->lexer.current_char;
 }
 
-/* Set the current token of the parser. */
 static void set_current_token(Parser* parser, TokenType type)
 {
   parser->current_token =
@@ -52,19 +53,33 @@ static void set_current_token(Parser* parser, TokenType type)
   mark_lexeme_beginning(parser);
 }
 
-void error(Parser* parser, const char* fmt, ...)
+void error_from_token(Parser* parser, Token token, const char* fmt,
+                      va_list args)
 {
   if (parser->compiler->error)
     return;
   parser->compiler->error = true;
-  va_list args;
-  va_start(args, fmt);
   vprintf(fmt, args);
-  va_end(args);
-  display_input_and_highlight_token(parser, parser->current_token);
+  display_input_and_highlight_token(parser, token);
 }
 
-static void lex_digit(Parser* parser)
+void error_from_previous_token(Parser* parser, const char* fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  error_from_token(parser, parser->previous_token, fmt, args);
+  va_end(args);
+}
+
+void error(Parser* parser, const char* fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  error_from_token(parser, parser->current_token, fmt, args);
+  va_end(args);
+}
+
+static void lex_integer(Parser* parser)
 {
   read_digits(&parser->lexer);
   set_current_token(parser, ZEAL_INTEGER_TOKEN);
@@ -74,7 +89,19 @@ static void lex_token_given_first_char(Parser* parser, const char first)
 {
   if (isdigit(first))
   {
-    lex_digit(parser);
+    lex_integer(parser);
+    return;
+  }
+  else if (first == '+')
+  {
+    read_char(&parser->lexer);
+    set_current_token(parser, ZEAL_PLUS_TOKEN);
+    return;
+  }
+  else if (first == '*')
+  {
+    read_char(&parser->lexer);
+    set_current_token(parser, ZEAL_STAR_TOKEN);
     return;
   }
   else if (first == '\0')
@@ -89,17 +116,20 @@ static void lex_token_given_first_char(Parser* parser, const char first)
 
 static void advance(Parser* parser)
 {
+  parser->previous_token = parser->current_token;
   eat_leading_whitespace(&parser->lexer);
   lex_token_given_first_char(parser, peek_char(&parser->lexer));
 }
 
-static void expect(Parser* parser, TokenType expected)
+static bool expect(Parser* parser, TokenType expected)
 {
-  advance(parser);
-  if (parser->current_token.type != expected)
-    error(parser, "Parser error: expected %s, found %s.\n",
-          token_type_to_string(expected),
-          token_type_to_string(parser->current_token.type));
+  if (parser->current_token.type == expected)
+    return true;
+
+  error(parser, "Parser error: expected %s, found %s.\n",
+        token_type_to_string(expected),
+        token_type_to_string(parser->current_token.type));
+  return false;
 }
 
 void parser_reset_input(Parser* parser, const char* input)
@@ -109,9 +139,46 @@ void parser_reset_input(Parser* parser, const char* input)
   parser->lexer.lexeme_beginning = input;
 }
 
+typedef uint8_t BindingPower;
+
+static BindingPower binding_powers[] = {
+  0,  /* ZEAL_ERROR_TOKEN */
+  20, /* ZEAL_INTEGER_TOKEN */
+  50, /* ZEAL_PLUS_TOKEN */
+  60, /* ZEAL_STAR_TOKEN */
+  0   /* ZEAL_EOF_TOKEN */
+};
+
+void parse_with_binding_power(Parser* parser, Fragment* fragment,
+                              BindingPower binding_power);
+
+static void parse_infix(Parser* parser, Fragment* fragment)
+{
+  Token op = parser->previous_token;
+  parse_with_binding_power(parser, fragment, binding_powers[op.type]);
+  generate_binary_op(parser->compiler, op, fragment);
+}
+
+void parse_with_binding_power(Parser* parser, Fragment* fragment,
+                              BindingPower binding_power)
+{
+  if (!expect(parser, ZEAL_INTEGER_TOKEN))
+    return;
+  advance(parser);
+  generate_integer(parser->compiler, fragment);
+
+  while (binding_power < binding_powers[parser->current_token.type])
+  {
+    advance(parser);
+    if (!expect(parser, ZEAL_INTEGER_TOKEN))
+      return;
+    parse_infix(parser, fragment);
+  }
+}
+
 void parse_expression(Parser* parser, Fragment* fragment)
 {
-  expect(parser, ZEAL_INTEGER_TOKEN);
-  generate_integer(parser->compiler, fragment);
+  advance(parser);
+  parse_with_binding_power(parser, fragment, 0);
   expect(parser, ZEAL_EOF_TOKEN);
 }

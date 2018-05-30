@@ -8,6 +8,8 @@ typedef enum
 {
   ZEAL_ERROR_TOKEN,
   ZEAL_INTEGER_TOKEN,
+  ZEAL_PLUS_TOKEN,
+  ZEAL_STAR_TOKEN,
   ZEAL_EOF_TOKEN
 } TokenType;
 

@@ -11,7 +11,7 @@
 
 void interpreter_init(Interpreter* interpreter)
 {
-  connect_compiler_and_parser(&interpreter->compiler, &interpreter->parser);
+  compiler_init(&interpreter->compiler, &interpreter->parser);
 }
 
 void evaluate(Interpreter* interpreter, const char* input)
