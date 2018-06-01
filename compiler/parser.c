@@ -19,6 +19,10 @@ static const char* token_type_to_string(TokenType type)
     return "integer";
   else if (type == ZEAL_PLUS_TOKEN || type == ZEAL_STAR_TOKEN)
     return "binary arithmetic operator";
+  else if (type == ZEAL_OPENING_PAREN)
+    return "(";
+  else if (type == ZEAL_CLOSING_PAREN)
+    return ")";
   else
     return "end of input";
 }
@@ -110,6 +114,18 @@ static void next_token(Parser* parser, const char first)
     set_current_token(parser, ZEAL_STAR_TOKEN);
     return;
   }
+  else if (first == '(')
+  {
+    read_char(&parser->lexer);
+    set_current_token(parser, ZEAL_OPENING_PAREN);
+    return;
+  }
+  else if (first == ')')
+  {
+    read_char(&parser->lexer);
+    set_current_token(parser, ZEAL_CLOSING_PAREN);
+    return;
+  }
   else if (first == '\0')
   {
     set_current_token(parser, ZEAL_EOF_TOKEN);
@@ -151,12 +167,24 @@ static BindingPower binding_powers[] = {
     20, /* ZEAL_INTEGER_TOKEN */
     50, /* ZEAL_PLUS_TOKEN */
     60, /* ZEAL_STAR_TOKEN */
+    0,  /* ZEAL_OPENING_PAREN */
+    0,  /* ZEAL_CLOSING_PAREN */
     0   /* ZEAL_EOF_TOKEN */
 };
 
-void prefix_integer(Parser* parser, Fragment* fragment)
+void parse_until(Parser* parser, Fragment* fragment,
+                 BindingPower binding_power);
+
+void null_integer(Parser* parser, Fragment* fragment)
 {
   generate_integer(parser->compiler, fragment);
+}
+
+void null_group(Parser* parser, Fragment* fragment)
+{
+  parse_until(parser, fragment, 0);
+  expect(parser, ZEAL_CLOSING_PAREN);
+  advance(parser);
 }
 
 typedef void (*NullFunction)(Parser*, Fragment*);
@@ -164,15 +192,14 @@ typedef void (*NullFunction)(Parser*, Fragment*);
 /* The null function is only specified for tokens which don't take an expression
  * on the left. */
 static NullFunction null_functions[] = {
-    NULL,           /* ZEAL_ERROR_TOKEN */
-    prefix_integer, /* ZEAL_INTEGER_TOKEN */
-    NULL,           /* ZEAL_PLUS_TOKEN */
-    NULL,           /* ZEAL_STAR_TOKEN */
-    NULL            /* ZEAL_EOF_TOKEN */
+    NULL,         /* ZEAL_ERROR_TOKEN */
+    null_integer, /* ZEAL_INTEGER_TOKEN */
+    NULL,         /* ZEAL_PLUS_TOKEN */
+    NULL,         /* ZEAL_STAR_TOKEN */
+    null_group,   /* ZEAL_OPENING_PAREN */
+    NULL,         /* ZEAL_CLOSING_PAREN */
+    NULL          /* ZEAL_EOF_TOKEN */
 };
-
-void parse_until(Parser* parser, Fragment* fragment,
-                 BindingPower binding_power);
 
 static void parse_infix(Parser* parser, Fragment* fragment)
 {
