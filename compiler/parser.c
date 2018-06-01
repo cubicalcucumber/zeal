@@ -154,6 +154,23 @@ static BindingPower binding_powers[] = {
     0   /* ZEAL_EOF_TOKEN */
 };
 
+void prefix_integer(Parser* parser, Fragment* fragment)
+{
+  generate_integer(parser->compiler, fragment);
+}
+
+typedef void (*NullFunction)(Parser*, Fragment*);
+
+/* The null function is only specified for tokens which don't take an expression
+ * on the left. */
+static NullFunction null_functions[] = {
+    NULL,           /* ZEAL_ERROR_TOKEN */
+    prefix_integer, /* ZEAL_INTEGER_TOKEN */
+    NULL,           /* ZEAL_PLUS_TOKEN */
+    NULL,           /* ZEAL_STAR_TOKEN */
+    NULL            /* ZEAL_EOF_TOKEN */
+};
+
 void parse_until(Parser* parser, Fragment* fragment,
                  BindingPower binding_power);
 
@@ -164,16 +181,26 @@ static void parse_infix(Parser* parser, Fragment* fragment)
   generate_binary_op(parser->compiler, op, fragment);
 }
 
+static void try_to_call_null_function(Parser* parser, Fragment* fragment)
+{
+  NullFunction null_function = null_functions[parser->previous_token.type];
+
+  if (!null_function)
+    error_from_previous_token(
+        parser, "Parser error: expected expression, found %s.\n",
+        token_type_to_string(parser->previous_token.type));
+
+  null_function(parser, fragment);
+}
+
 void parse_until(Parser* parser, Fragment* fragment, BindingPower binding_power)
 {
-  expect(parser, ZEAL_INTEGER_TOKEN);
   advance(parser);
-  generate_integer(parser->compiler, fragment);
+  try_to_call_null_function(parser, fragment);
 
   while (binding_power < binding_powers[parser->current_token.type])
   {
     advance(parser);
-    expect(parser, ZEAL_INTEGER_TOKEN);
     parse_infix(parser, fragment);
   }
 }
