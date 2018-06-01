@@ -23,7 +23,7 @@ typedef struct
 void parser_reset_input(Parser* parser, const char* input);
 
 /* Parse an expression and invoke code generation into the given fragment. */
-void parse_expression(Parser* parser, Fragment* fragment);
+void parse(Parser* parser, Fragment* fragment);
 
 /* Report an error and display the current input string. */
 void error(Parser* parser, const char* fmt, ...);

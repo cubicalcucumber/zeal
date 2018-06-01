@@ -25,7 +25,7 @@ static void compiler_reset(Compiler* compiler, const char* input)
 
 static void generate_expression(Compiler* compiler, Fragment* fragment)
 {
-  parse_expression(compiler->parser, fragment);
+  parse(compiler->parser, fragment);
   fragment_add_code(fragment, ZEAL_OP_PRINT);
   fragment_add_code(fragment, ZEAL_OP_HALT);
 }
