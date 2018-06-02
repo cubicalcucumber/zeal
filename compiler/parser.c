@@ -8,8 +8,9 @@
 #include "compiler.h"
 #include "parser.h"
 
-/* Used for jumping back to the parsers entry point in the error case. */
-static jmp_buf end;
+/********************
+ * Helper functions *
+ ********************/
 
 static const char* token_type_to_string(TokenType type)
 {
@@ -39,6 +40,13 @@ static void println_n_times(size_t n, char c)
   puts("");
 }
 
+/******************
+ * Error handling *
+ ******************/
+
+/* Used for jumping back to the parsers entry point in the error case. */
+static jmp_buf end;
+
 static void display_token_in_context(Parser* parser, Token token)
 {
   printf(" | %s\n", parser->input);
@@ -48,19 +56,7 @@ static void display_token_in_context(Parser* parser, Token token)
   println_n_times(token.length == 0 ? 1 : token.length, '~');
 }
 
-static void mark_lexeme_beginning(Parser* parser)
-{
-  parser->lexer.lexeme_beginning = parser->lexer.current_char;
-}
-
-static void update_current_token(Parser* parser, TokenType type)
-{
-  Token token = {.type = type,
-                 .beginning = parser->lexer.lexeme_beginning,
-                 .length = current_lexeme_length(&parser->lexer)};
-  parser->current_token = token;
-}
-
+/* Set the error flag, report an error message and abort the parsing process. */
 static void error(Parser* parser, Token token, const char* fmt, va_list args)
 {
   parser->compiler->error = true;
@@ -85,12 +81,31 @@ void error_from_current_token(Parser* parser, const char* fmt, ...)
   va_end(args);
 }
 
+/*************************************
+ * Functions for dealing with tokens *
+ *************************************/
+
+static void update_current_token(Parser* parser, TokenType type)
+{
+  Token token = {.type = type,
+                 .beginning = parser->lexer.lexeme_beginning,
+                 .length = current_lexeme_length(&parser->lexer)};
+  parser->current_token = token;
+}
+
 static void lex_integer(Parser* parser)
 {
   read_digits(&parser->lexer);
   update_current_token(parser, ZEAL_INTEGER_TOKEN);
 }
 
+static void lex_single_char_as(Parser* parser, TokenType token_type)
+{
+  read_char(&parser->lexer);
+  update_current_token(parser, token_type);
+}
+
+/* Lex the next token given the first character. */
 static void next_token(Parser* parser, const char first)
 {
   if (isdigit(first))
@@ -100,26 +115,22 @@ static void next_token(Parser* parser, const char first)
   }
   else if (first == '+')
   {
-    read_char(&parser->lexer);
-    update_current_token(parser, ZEAL_PLUS_TOKEN);
+    lex_single_char_as(parser, ZEAL_PLUS_TOKEN);
     return;
   }
   else if (first == '*')
   {
-    read_char(&parser->lexer);
-    update_current_token(parser, ZEAL_STAR_TOKEN);
+    lex_single_char_as(parser, ZEAL_STAR_TOKEN);
     return;
   }
   else if (first == '(')
   {
-    read_char(&parser->lexer);
-    update_current_token(parser, ZEAL_OPENING_PAREN);
+    lex_single_char_as(parser, ZEAL_OPENING_PAREN);
     return;
   }
   else if (first == ')')
   {
-    read_char(&parser->lexer);
-    update_current_token(parser, ZEAL_CLOSING_PAREN);
+    lex_single_char_as(parser, ZEAL_CLOSING_PAREN);
     return;
   }
   else if (first == '\0')
@@ -131,6 +142,12 @@ static void next_token(Parser* parser, const char first)
   update_current_token(parser, ZEAL_ERROR_TOKEN);
   error_from_current_token(parser, "Lexer error: unexpected character '%c'.\n",
                            first);
+}
+
+/* Mark the current cursor position as beginning of the next token. */
+static void mark_lexeme_beginning(Parser* parser)
+{
+  parser->lexer.lexeme_beginning = parser->lexer.current_char;
 }
 
 static void advance(Parser* parser)
@@ -157,13 +174,11 @@ static void consume(Parser* parser, TokenType expected)
   advance(parser);
 }
 
-void parser_reset_input(Parser* parser, const char* input)
-{
-  parser->input = input;
-  parser->lexer.current_char = input;
-  parser->lexer.lexeme_beginning = input;
-}
+/***********
+ * Parsing *
+ ***********/
 
+/* Every token has an associated binding power. */
 typedef uint8_t BindingPower;
 
 static BindingPower binding_powers[] = {
@@ -186,10 +201,10 @@ void null_group(Parser* parser)
   consume(parser, ZEAL_CLOSING_PAREN);
 }
 
+/* Null functions are specified for tokens which don't take an expression on
+ * the left. */
 typedef void (*NullFunction)(Parser*);
 
-/* The null function is only specified for tokens which don't take an expression
- * on the left. */
 static NullFunction null_functions[] = {
     NULL,         /* ZEAL_ERROR_TOKEN */
     null_integer, /* ZEAL_INTEGER_TOKEN */
@@ -207,6 +222,8 @@ static void left_binary_op(Parser* parser)
   generate_binary_op(parser->compiler, op);
 }
 
+/* Left functions are specified for tokens which take an expression on the
+ * left. */
 typedef void (*LeftFunction)(Parser*);
 
 static LeftFunction left_functions[] = {
@@ -247,6 +264,13 @@ void parse_until(Parser* parser, BindingPower binding_power)
     advance(parser);
     call_left_function(parser);
   }
+}
+
+void parser_reset_input(Parser* parser, const char* input)
+{
+  parser->input = input;
+  parser->lexer.current_char = input;
+  parser->lexer.lexeme_beginning = input;
 }
 
 void parse(Parser* parser)

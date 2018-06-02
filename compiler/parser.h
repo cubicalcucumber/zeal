@@ -25,9 +25,10 @@ void parser_reset_input(Parser* parser, const char* input);
 /* Parse an expression and invoke code generation into the current fragment. */
 void parse(Parser* parser);
 
-/* Report an error and display the current input string. */
+/* Report an error associated with the current token. */
 void error_from_current_token(Parser* parser, const char* fmt, ...);
 
+/* Report an error associated with the previous token. */
 void error_from_previous_token(Parser* parser, const char* fmt, ...);
 
 #endif
