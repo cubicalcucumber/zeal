@@ -22,8 +22,8 @@ typedef struct
  * string. */
 void parser_reset_input(Parser* parser, const char* input);
 
-/* Parse an expression and invoke code generation into the given fragment. */
-void parse(Parser* parser, Fragment* fragment);
+/* Parse an expression and invoke code generation into the current fragment. */
+void parse(Parser* parser);
 
 /* Report an error and display the current input string. */
 void error(Parser* parser, const char* fmt, ...);

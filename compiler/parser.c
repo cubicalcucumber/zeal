@@ -172,22 +172,18 @@ static BindingPower binding_powers[] = {
     0   /* ZEAL_EOF_TOKEN */
 };
 
-void parse_until(Parser* parser, Fragment* fragment,
-                 BindingPower binding_power);
+void parse_until(Parser* parser, BindingPower binding_power);
 
-void null_integer(Parser* parser, Fragment* fragment)
-{
-  generate_integer(parser->compiler, fragment);
-}
+void null_integer(Parser* parser) { generate_integer(parser->compiler); }
 
-void null_group(Parser* parser, Fragment* fragment)
+void null_group(Parser* parser)
 {
-  parse_until(parser, fragment, 0);
+  parse_until(parser, 0);
   expect(parser, ZEAL_CLOSING_PAREN);
   advance(parser);
 }
 
-typedef void (*NullFunction)(Parser*, Fragment*);
+typedef void (*NullFunction)(Parser*);
 
 /* The null function is only specified for tokens which don't take an expression
  * on the left. */
@@ -201,14 +197,14 @@ static NullFunction null_functions[] = {
     NULL          /* ZEAL_EOF_TOKEN */
 };
 
-static void parse_infix(Parser* parser, Fragment* fragment)
+static void parse_infix(Parser* parser)
 {
   Token op = parser->previous_token;
-  parse_until(parser, fragment, binding_powers[op.type]);
-  generate_binary_op(parser->compiler, op, fragment);
+  parse_until(parser, binding_powers[op.type]);
+  generate_binary_op(parser->compiler, op);
 }
 
-static void try_to_call_null_function(Parser* parser, Fragment* fragment)
+static void try_to_call_null_function(Parser* parser)
 {
   NullFunction null_function = null_functions[parser->previous_token.type];
 
@@ -217,22 +213,22 @@ static void try_to_call_null_function(Parser* parser, Fragment* fragment)
         parser, "Parser error: expected expression, found %s.\n",
         token_type_to_string(parser->previous_token.type));
 
-  null_function(parser, fragment);
+  null_function(parser);
 }
 
-void parse_until(Parser* parser, Fragment* fragment, BindingPower binding_power)
+void parse_until(Parser* parser, BindingPower binding_power)
 {
   advance(parser);
-  try_to_call_null_function(parser, fragment);
+  try_to_call_null_function(parser);
 
   while (binding_power < binding_powers[parser->current_token.type])
   {
     advance(parser);
-    parse_infix(parser, fragment);
+    parse_infix(parser);
   }
 }
 
-void parse(Parser* parser, Fragment* fragment)
+void parse(Parser* parser)
 {
   /* In case of an error, the execution will continue here and cause the parser
    * to exit. */
@@ -240,7 +236,7 @@ void parse(Parser* parser, Fragment* fragment)
   if (!error_detected)
   {
     advance(parser);
-    parse_until(parser, fragment, 0);
+    parse_until(parser, 0);
     expect(parser, ZEAL_EOF_TOKEN);
   }
 }

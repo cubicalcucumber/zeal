@@ -18,7 +18,7 @@ void evaluate(Interpreter* interpreter, const char* input)
 {
   Fragment fragment;
   fragment_init(&fragment);
-  parse_and_compile(&interpreter->compiler, input, &fragment);
+  compile(&interpreter->compiler, input, &fragment);
   if (!interpreter->compiler.error)
     run(&interpreter->vm, &fragment);
 }
