@@ -197,12 +197,24 @@ static NullFunction null_functions[] = {
     NULL          /* ZEAL_EOF_TOKEN */
 };
 
-static void parse_infix(Parser* parser)
+static void left_binary_op(Parser* parser)
 {
   Token op = parser->previous_token;
   parse_until(parser, binding_powers[op.type]);
   generate_binary_op(parser->compiler, op);
 }
+
+typedef void (*LeftFunction)(Parser*);
+
+static LeftFunction left_functions[] = {
+    NULL,           /* ZEAL_ERROR_TOKEN */
+    NULL,           /* ZEAL_INTEGER_TOKEN */
+    left_binary_op, /* ZEAL_PLUS_TOKEN */
+    left_binary_op, /* ZEAL_STAR_TOKEN */
+    NULL,           /* ZEAL_OPENING_PAREN */
+    NULL,           /* ZEAL_CLOSING_PAREN */
+    NULL            /* ZEAL_EOF_TOKEN */
+};
 
 static void try_to_call_null_function(Parser* parser)
 {
@@ -216,6 +228,12 @@ static void try_to_call_null_function(Parser* parser)
   null_function(parser);
 }
 
+static void call_left_function(Parser* parser)
+{
+  LeftFunction left_function = left_functions[parser->previous_token.type];
+  left_function(parser);
+}
+
 void parse_until(Parser* parser, BindingPower binding_power)
 {
   advance(parser);
@@ -224,7 +242,7 @@ void parse_until(Parser* parser, BindingPower binding_power)
   while (binding_power < binding_powers[parser->current_token.type])
   {
     advance(parser);
-    parse_infix(parser);
+    call_left_function(parser);
   }
 }
 
