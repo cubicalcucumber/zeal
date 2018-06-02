@@ -153,6 +153,12 @@ static void expect(Parser* parser, TokenType expected)
         token_type_to_string(parser->current_token.type));
 }
 
+static void consume(Parser* parser, TokenType expected)
+{
+  expect(parser, expected);
+  advance(parser);
+}
+
 void parser_reset_input(Parser* parser, const char* input)
 {
   parser->input = input;
@@ -179,8 +185,7 @@ void null_integer(Parser* parser) { generate_integer(parser->compiler); }
 void null_group(Parser* parser)
 {
   parse_until(parser, 0);
-  expect(parser, ZEAL_CLOSING_PAREN);
-  advance(parser);
+  consume(parser, ZEAL_CLOSING_PAREN);
 }
 
 typedef void (*NullFunction)(Parser*);
