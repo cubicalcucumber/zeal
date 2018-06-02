@@ -193,7 +193,7 @@ static BindingPower binding_powers[] = {
 
 void parse_until(Parser* parser, BindingPower binding_power);
 
-void null_integer(Parser* parser) { generate_integer(parser->compiler); }
+void null_integer(Parser* parser) { compile_integer(parser->compiler); }
 
 void null_group(Parser* parser)
 {
@@ -219,7 +219,7 @@ static void left_binary_op(Parser* parser)
 {
   Token op = parser->previous_token;
   parse_until(parser, binding_powers[op.type]);
-  generate_binary_op(parser->compiler, op);
+  compile_binary_operator(parser->compiler, op);
 }
 
 /* Left functions are specified for tokens which take an expression on the
