@@ -53,20 +53,16 @@ static void mark_lexeme_beginning(Parser* parser)
   parser->lexer.lexeme_beginning = parser->lexer.current_char;
 }
 
-static void set_current_token(Parser* parser, TokenType type)
+static void update_current_token(Parser* parser, TokenType type)
 {
   Token token = {.type = type,
                  .beginning = parser->lexer.lexeme_beginning,
                  .length = current_lexeme_length(&parser->lexer)};
   parser->current_token = token;
-  mark_lexeme_beginning(parser);
 }
 
-void error_from_token(Parser* parser, Token token, const char* fmt,
-                      va_list args)
+static void error(Parser* parser, Token token, const char* fmt, va_list args)
 {
-  if (parser->compiler->error)
-    return;
   parser->compiler->error = true;
   vprintf(fmt, args);
   display_token_in_context(parser, token);
@@ -77,22 +73,22 @@ void error_from_previous_token(Parser* parser, const char* fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  error_from_token(parser, parser->previous_token, fmt, args);
+  error(parser, parser->previous_token, fmt, args);
   va_end(args);
 }
 
-void error(Parser* parser, const char* fmt, ...)
+void error_from_current_token(Parser* parser, const char* fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  error_from_token(parser, parser->current_token, fmt, args);
+  error(parser, parser->current_token, fmt, args);
   va_end(args);
 }
 
 static void lex_integer(Parser* parser)
 {
   read_digits(&parser->lexer);
-  set_current_token(parser, ZEAL_INTEGER_TOKEN);
+  update_current_token(parser, ZEAL_INTEGER_TOKEN);
 }
 
 static void next_token(Parser* parser, const char first)
@@ -105,35 +101,36 @@ static void next_token(Parser* parser, const char first)
   else if (first == '+')
   {
     read_char(&parser->lexer);
-    set_current_token(parser, ZEAL_PLUS_TOKEN);
+    update_current_token(parser, ZEAL_PLUS_TOKEN);
     return;
   }
   else if (first == '*')
   {
     read_char(&parser->lexer);
-    set_current_token(parser, ZEAL_STAR_TOKEN);
+    update_current_token(parser, ZEAL_STAR_TOKEN);
     return;
   }
   else if (first == '(')
   {
     read_char(&parser->lexer);
-    set_current_token(parser, ZEAL_OPENING_PAREN);
+    update_current_token(parser, ZEAL_OPENING_PAREN);
     return;
   }
   else if (first == ')')
   {
     read_char(&parser->lexer);
-    set_current_token(parser, ZEAL_CLOSING_PAREN);
+    update_current_token(parser, ZEAL_CLOSING_PAREN);
     return;
   }
   else if (first == '\0')
   {
-    set_current_token(parser, ZEAL_EOF_TOKEN);
+    update_current_token(parser, ZEAL_EOF_TOKEN);
     return;
   }
 
-  set_current_token(parser, ZEAL_ERROR_TOKEN);
-  error(parser, "Lexer error: unexpected character '%c'.\n", first);
+  update_current_token(parser, ZEAL_ERROR_TOKEN);
+  error_from_current_token(parser, "Lexer error: unexpected character '%c'.\n",
+                           first);
 }
 
 static void advance(Parser* parser)
@@ -141,6 +138,7 @@ static void advance(Parser* parser)
   parser->previous_token = parser->current_token;
   eat_leading_whitespace(&parser->lexer);
   next_token(parser, peek_char(&parser->lexer));
+  mark_lexeme_beginning(parser);
 }
 
 static void expect(Parser* parser, TokenType expected)
@@ -148,9 +146,9 @@ static void expect(Parser* parser, TokenType expected)
   if (parser->current_token.type == expected)
     return;
 
-  error(parser, "Parser error: expected %s, found %s.\n",
-        token_type_to_string(expected),
-        token_type_to_string(parser->current_token.type));
+  error_from_current_token(parser, "Parser error: expected %s, found %s.\n",
+                           token_type_to_string(expected),
+                           token_type_to_string(parser->current_token.type));
 }
 
 static void consume(Parser* parser, TokenType expected)
