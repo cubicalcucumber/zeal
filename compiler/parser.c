@@ -183,7 +183,7 @@ typedef uint8_t BindingPower;
 
 static BindingPower binding_powers[] = {
     0,  /* ZEAL_ERROR_TOKEN */
-    20, /* ZEAL_INTEGER_TOKEN */
+    0,  /* ZEAL_INTEGER_TOKEN */
     50, /* ZEAL_PLUS_TOKEN */
     60, /* ZEAL_STAR_TOKEN */
     0,  /* ZEAL_OPENING_PAREN */
