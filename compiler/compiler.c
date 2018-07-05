@@ -67,6 +67,9 @@ void compile_binary_operator(Compiler* compiler, Token op_token)
   if (op_token.type == ZEAL_PLUS_TOKEN)
     fragment_add_code(compiler->fragment,
                       binary_op_instruction(compiler) | ZEAL_OP_ADD);
+  else if (op_token.type == ZEAL_MINUS_TOKEN)
+    fragment_add_code(compiler->fragment,
+                      binary_op_instruction(compiler) | ZEAL_OP_SUB);
   else if (op_token.type == ZEAL_STAR_TOKEN)
     fragment_add_code(compiler->fragment,
                       binary_op_instruction(compiler) | ZEAL_OP_MUL);

@@ -51,6 +51,15 @@ void run(VirtualMachine* vm, Fragment* fragment)
           value_from_integer((*(sp - a)).integer + (*(sp - b)).integer);
       break;
     }
+    case ZEAL_OP_SUB:
+    {
+      uint8_t dst = (instruction & 0xff00) >> 8;
+      uint8_t b = (instruction & 0xff0000) >> 16;
+      uint8_t a = (instruction & 0xff000000) >> 24;
+      *(sp - dst) =
+          value_from_integer((*(sp - a)).integer - (*(sp - b)).integer);
+      break;
+    }
     case ZEAL_OP_MUL:
     {
       uint8_t dst = (instruction & 0xff00) >> 8;

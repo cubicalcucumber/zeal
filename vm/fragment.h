@@ -26,6 +26,7 @@ typedef enum
   ZEAL_OP_ADD,
   /* Multiply the values in registers A and B and store result in register
    * DST. */
+  ZEAL_OP_SUB,
   ZEAL_OP_MUL,
   /* Halt the execution. */
   ZEAL_OP_HALT

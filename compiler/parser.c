@@ -18,8 +18,12 @@ static const char* token_type_to_string(TokenType type)
     return "lexer error";
   else if (type == ZEAL_INTEGER_TOKEN)
     return "integer";
-  else if (type == ZEAL_PLUS_TOKEN || type == ZEAL_STAR_TOKEN)
-    return "binary arithmetic operator";
+  else if (type == ZEAL_PLUS_TOKEN)
+    return "+";
+  else if (type == ZEAL_MINUS_TOKEN)
+    return "-";
+  else if (type == ZEAL_STAR_TOKEN)
+    return "*";
   else if (type == ZEAL_OPENING_PAREN)
     return "(";
   else if (type == ZEAL_CLOSING_PAREN)
@@ -113,6 +117,11 @@ static void next_token(Parser* parser, const char first)
     lex_integer(parser);
     return;
   }
+  else if (first == '-')
+  {
+    lex_single_char_as(parser, ZEAL_MINUS_TOKEN);
+    return;
+  }
   else if (first == '+')
   {
     lex_single_char_as(parser, ZEAL_PLUS_TOKEN);
@@ -184,6 +193,7 @@ typedef uint8_t BindingPower;
 static BindingPower binding_powers[] = {
     0,  /* ZEAL_ERROR_TOKEN */
     0,  /* ZEAL_INTEGER_TOKEN */
+    50, /* ZEAL_MINUS_TOKEN */
     50, /* ZEAL_PLUS_TOKEN */
     60, /* ZEAL_STAR_TOKEN */
     0,  /* ZEAL_OPENING_PAREN */
@@ -208,6 +218,7 @@ typedef void (*NullFunction)(Parser*);
 static NullFunction null_functions[] = {
     NULL,         /* ZEAL_ERROR_TOKEN */
     null_integer, /* ZEAL_INTEGER_TOKEN */
+    NULL,         /* ZEAL_MINUS_TOKEN */
     NULL,         /* ZEAL_PLUS_TOKEN */
     NULL,         /* ZEAL_STAR_TOKEN */
     null_group,   /* ZEAL_OPENING_PAREN */
@@ -229,6 +240,7 @@ typedef void (*LeftFunction)(Parser*);
 static LeftFunction left_functions[] = {
     NULL,           /* ZEAL_ERROR_TOKEN */
     NULL,           /* ZEAL_INTEGER_TOKEN */
+    left_binary_op, /* ZEAL_MINUS_TOKEN */
     left_binary_op, /* ZEAL_PLUS_TOKEN */
     left_binary_op, /* ZEAL_STAR_TOKEN */
     NULL,           /* ZEAL_OPENING_PAREN */
