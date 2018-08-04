@@ -4,7 +4,7 @@ CFLAGS := -Wall -Wpedantic -pedantic -std=c99
 all: repl.o utils.o \
 		 compiler/lexer.o compiler/parser.o compiler/compiler.o \
 		 vm/fragment.o vm/value.o vm/vm.o zeal.o
-	$(CC) $(CFLAGS) -o zeal \
+	$(CC) $(CFLAGS) main.c -o zeal \
 		repl.o utils.o compiler/lexer.o compiler/parser.o compiler/compiler.o \
 		vm/fragment.o vm/value.o vm/vm.o zeal.o
 

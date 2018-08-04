@@ -12,6 +12,7 @@ typedef struct
   VirtualMachine vm;
 } Interpreter;
 
+/* Initialize the interpreter. */
 void interpreter_init(Interpreter* interpreter);
 
 /* Parse, compile and run the given input string. */
