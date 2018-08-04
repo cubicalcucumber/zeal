@@ -12,6 +12,9 @@ typedef struct
   Fragment* fragment;
 } VirtualMachine;
 
+/* Initialize the virtual machine. */
+void vm_init(VirtualMachine* vm);
+
 /* Run the given program fragment. */
 void run(VirtualMachine* vm, Fragment* fragment);
 

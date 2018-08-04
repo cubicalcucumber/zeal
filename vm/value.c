@@ -3,12 +3,11 @@
 #include "../utils.h"
 #include "value.h"
 
+Value value_nil() { return (Value){.type = ZEAL_VALUE_NIL, .integer = 0}; }
+
 Value value_from_integer(int64_t integer)
 {
-  Value value;
-  value.type = ZEAL_VALUE_INTEGER;
-  value.integer = integer;
-  return value;
+  return (Value){.type = ZEAL_VALUE_INTEGER, .integer = integer};
 }
 
 void value_print(Value value)

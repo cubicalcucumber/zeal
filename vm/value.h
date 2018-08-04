@@ -17,6 +17,9 @@ typedef struct
   int64_t integer;
 } Value;
 
+/* Create nil value. */
+Value value_nil();
+
 /* Create a value from the given 64-bit int. */
 Value value_from_integer(int64_t integer);
 

@@ -12,6 +12,12 @@ static void setup_fragment(VirtualMachine* vm, Fragment* fragment)
   vm->fragment = fragment;
 }
 
+void vm_init(VirtualMachine* vm)
+{
+  for (size_t i = 0; i < ZEAL_STACK_SIZE; ++i)
+    vm->stack[i] = value_nil();
+}
+
 void run(VirtualMachine* vm, Fragment* fragment)
 {
   setup_fragment(vm, fragment);

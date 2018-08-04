@@ -11,6 +11,7 @@
 void interpreter_init(Interpreter* interpreter)
 {
   compiler_init(&interpreter->compiler, &interpreter->parser);
+  vm_init(&interpreter->vm);
 }
 
 Value interpreter_get_result(Interpreter* interpreter)
