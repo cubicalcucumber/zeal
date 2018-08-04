@@ -79,13 +79,21 @@ static void catch_exit_command(Repl* repl)
     repl->keep_running = false;
 }
 
+static void show_result(Interpreter* interpreter)
+{
+  value_println(interpreter_get_result(interpreter));
+}
+
 static void read_eval_print(Repl* repl)
 {
   display_prompt();
   repl->line = read_line(stdin);
   catch_exit_command(repl);
   if (!is_empty_line(repl) && repl->keep_running)
+  {
     evaluate(&repl->interpreter, repl->line);
+    show_result(&repl->interpreter);
+  }
   free(repl->line);
 }
 

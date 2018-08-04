@@ -36,7 +36,6 @@ static void reset(Compiler* compiler, const char* input, Fragment* fragment)
 static void expression(Compiler* compiler)
 {
   parse(compiler->parser);
-  fragment_add_code(compiler->fragment, ZEAL_OP_PRINT);
   fragment_add_code(compiler->fragment, ZEAL_OP_HALT);
 }
 
