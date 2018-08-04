@@ -13,6 +13,11 @@ void interpreter_init(Interpreter* interpreter)
   compiler_init(&interpreter->compiler, &interpreter->parser);
 }
 
+Value interpreter_get_result(Interpreter* interpreter)
+{
+  return interpreter->vm.stack[ZEAL_STACK_SIZE - 1];
+}
+
 void evaluate(Interpreter* interpreter, const char* input)
 {
   Fragment fragment;
