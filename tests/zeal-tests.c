@@ -5,13 +5,11 @@
 #include "test.h"
 #include "../zeal.h"
 
-/* Expands into code that evaluates an input string with an interpreter and
- * compares the result with an expected value. Register a failed check if the
- * values differ. */
-#define ZEAL_CHECK_EVALUATION(interpreter, input, expected_value)              \
+/* Expands into code that compares the current interpreter result to the given
+ * expected value. Register a failed check if the values differ. */
+#define ZEAL_CHECK_EVALUATION_RESULT(interpreter, expected_value)              \
   do                                                                           \
   {                                                                            \
-    evaluate(interpreter, input);                                              \
     Value result = interpreter_get_result(interpreter);                        \
     if (!values_equal(result, expected_value))                                 \
     {                                                                          \
@@ -26,6 +24,23 @@
     else                                                                       \
     {                                                                          \
       ZEAL_PASS();                                                             \
+    }                                                                          \
+  } while (0);
+
+/* Expands into code that evaluates an input string with an interpreter and
+ * compares the result with an expected value. Register a failed check if the
+ * values differ or a compiler error occurs. */
+#define ZEAL_CHECK_EVALUATION(interpreter, input, expected_value)              \
+  do                                                                           \
+  {                                                                            \
+    evaluate(interpreter, input);                                              \
+    if (interpreter->compiler.error)                                           \
+    {                                                                          \
+      ZEAL_FAIL("Compiler error");                                             \
+    }                                                                          \
+    else                                                                       \
+    {                                                                          \
+      ZEAL_CHECK_EVALUATION_RESULT(interpreter, expected_value);               \
     }                                                                          \
   } while (0);
 
