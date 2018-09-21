@@ -15,7 +15,7 @@ void value_print(Value value)
   if (value.type == ZEAL_VALUE_NIL)
     printf("nil");
   else if (value.type == ZEAL_VALUE_INTEGER)
-    printf("%ld : integer", (long) value.integer);
+    printf("%lld : integer", value.integer);
   else
     ZEAL_PANIC("Unknown value type.\n");
 }
