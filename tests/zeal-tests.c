@@ -77,8 +77,8 @@ void test_integer_constants(Interpreter* interpreter)
   ZEAL_CHECK_EVALUATION(interpreter, "0", value_from_integer(0));
   ZEAL_CHECK_EVALUATION(interpreter, "1", value_from_integer(1));
   ZEAL_CHECK_EVALUATION(interpreter, "123", value_from_integer(123));
-  ZEAL_CHECK_EVALUATION(interpreter, "2147483647",
-                        value_from_integer(2147483647));
+  ZEAL_CHECK_EVALUATION(interpreter, "9223372036854775807",
+                        value_from_integer(9223372036854775807));
 }
 
 void test_basic_arithmetic(Interpreter* interpreter)

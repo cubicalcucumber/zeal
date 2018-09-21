@@ -11,7 +11,7 @@
 static bool int64_from_token(Token token, int64_t* result)
 {
   char* end = ((char*) token.beginning) + token.length;
-  *result = strtol(token.beginning, &end, 10);
+  *result = strtoll(token.beginning, &end, 10);
   return errno != ERANGE;
 }
 
