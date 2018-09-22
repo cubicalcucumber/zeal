@@ -72,7 +72,16 @@ static void run_interpreter_test(InterpreterTest test, const char* name)
   show_test_results(ctx);
 }
 
-void test_integer_constants(Interpreter* interpreter)
+void test_whitespace_lexing(Interpreter* interpreter)
+{
+  ZEAL_CHECK_EVALUATION(interpreter, "  1", value_from_integer(1));
+  ZEAL_CHECK_EVALUATION(interpreter, "2  ", value_from_integer(2));
+  ZEAL_CHECK_EVALUATION(interpreter, " 3  ", value_from_integer(3));
+  ZEAL_CHECK_EVALUATION(interpreter, "  4 +    5  ", value_from_integer(9));
+  ZEAL_CHECK_EVALUATION(interpreter, " 6+7  ", value_from_integer(13));
+}
+
+void test_integer_literals(Interpreter* interpreter)
 {
   ZEAL_CHECK_EVALUATION(interpreter, "0", value_from_integer(0));
   ZEAL_CHECK_EVALUATION(interpreter, "1", value_from_integer(1));
@@ -115,9 +124,10 @@ void test_arithmetic_precedence(Interpreter* interpreter)
 
 int32_t main(void)
 {
-  run_interpreter_test(test_integer_constants, "integer constants");
+  run_interpreter_test(test_integer_literals, "integer literals");
   run_interpreter_test(test_basic_arithmetic, "basic arithmetic");
   run_interpreter_test(test_arithmetic_precedence, "arithmetic precedence");
   run_interpreter_test(test_grouped_expressions, "grouped expressions");
+  run_interpreter_test(test_whitespace_lexing, "whitespace lexing");
   return 0;
 }
