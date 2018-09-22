@@ -91,8 +91,9 @@ static void read_eval_print(Repl* repl)
   catch_exit_command(repl);
   if (!is_empty_line(repl) && repl->keep_running)
   {
-    evaluate(&repl->interpreter, repl->line);
-    show_result(&repl->interpreter);
+    EvaluationResult result = evaluate(&repl->interpreter, repl->line);
+    if (result == ZEAL_EVALUATION_SUCCESS)
+      show_result(&repl->interpreter);
   }
   free(repl->line);
 }

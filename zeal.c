@@ -19,11 +19,13 @@ Value interpreter_get_result(Interpreter* interpreter)
   return interpreter->vm.stack[ZEAL_STACK_SIZE - 1];
 }
 
-void evaluate(Interpreter* interpreter, const char* input)
+EvaluationResult evaluate(Interpreter* interpreter, const char* input)
 {
   Fragment fragment;
   fragment_init(&fragment);
   compile(&interpreter->compiler, input, &fragment);
-  if (!interpreter->compiler.error)
-    run(&interpreter->vm, &fragment);
+  if (interpreter->compiler.error)
+    return ZEAL_EVALUATION_ERROR;
+  run(&interpreter->vm, &fragment);
+  return ZEAL_EVALUATION_SUCCESS;
 }

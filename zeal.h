@@ -13,6 +13,12 @@ typedef struct
   VirtualMachine vm;
 } Interpreter;
 
+typedef enum
+{
+  ZEAL_EVALUATION_SUCCESS,
+  ZEAL_EVALUATION_ERROR
+} EvaluationResult;
+
 /* Initialize the interpreter. */
 void interpreter_init(Interpreter* interpreter);
 
@@ -20,6 +26,6 @@ void interpreter_init(Interpreter* interpreter);
 Value interpreter_get_result(Interpreter* interpreter);
 
 /* Parse, compile and run the given input string. */
-void evaluate(Interpreter* interpreter, const char* input);
+EvaluationResult evaluate(Interpreter* interpreter, const char* input);
 
 #endif
