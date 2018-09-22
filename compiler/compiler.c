@@ -8,20 +8,29 @@
 #include "../vm/value.h"
 
 /* Convert the given token to a 64-bit integer. Return true on success. */
-static bool int64_from_token(Token token, int64_t* result)
+static void int64_from_token(Token token, int64_t* result)
 {
   char* end = ((char*) token.beginning) + token.length;
   *result = strtoll(token.beginning, &end, 10);
-  return errno != ERANGE;
+}
+
+/* Check for the ERANGE error and report compiler error if encountered. */
+static void check_for_out_of_range_error(Compiler* compiler)
+{
+  if (errno == ERANGE)
+  {
+    errno = 0;
+    error_from_previous_token(compiler->parser,
+                              "Compiler error: integer out of range.\n");
+  }
 }
 
 /* Convert the previous token to an integer value. */
 static Value create_integer(Compiler* compiler)
 {
   int64_t as_int;
-  if (!int64_from_token(compiler->parser->previous_token, &as_int))
-    error_from_previous_token(compiler->parser,
-                              "Compiler error: integer out of range.\n");
+  int64_from_token(compiler->parser->previous_token, &as_int);
+  check_for_out_of_range_error(compiler);
   return value_from_integer(as_int);
 }
 
